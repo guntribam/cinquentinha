@@ -1,6 +1,5 @@
 import { Client, Databases } from 'node-appwrite';
 import TelegramBot from "node-telegram-bot-api";
-import axios from "axios";
 import moment from "moment-timezone";
 
 export default async ({ req, res, log, error }) => {
