@@ -23,7 +23,7 @@ export default async ({ req, res, log, error }) => {
   let body = {};
   try {
     body = JSON.parse(req || '{}');
-    log(body)
+    log(req.body)
   } catch (err) {
     log('Erro ao fazer JSON.parse do req.payload', err);
   }
