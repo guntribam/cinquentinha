@@ -39,6 +39,7 @@ export default async ({ req, res, log, error }) => {
     const msg = body.message;
     const text = msg.text || "";
     const chatId = msg.chat.id;
+    log({msg, text, chatId})
 
     // Comando /start
     if (text.startsWith('/start')) {
