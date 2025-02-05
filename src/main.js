@@ -27,13 +27,13 @@ export default async ({ req, res, log, error }) => {
   } catch (err) {
     log('Erro ao fazer JSON.parse do req.payload', err);
   }
-
+  
   // 4. Se for chamada de CRON (ex.: {"cron":true}), gera o ranking
   if (body.cron === true) {
     await rankingDia(database, databaseId, collectionId, BOT_TOKEN, DEFAULT_CHAT_ID);
     return res.json({ success: true, message: "Ranking gerado via CRON." });
   }
-
+  log(body)
   // 5. Caso seja um update do Telegram (contém "update_id" e "message")
   if (body.update_id && body.message) {
     const msg = body.message;
