@@ -22,7 +22,7 @@ export default async ({ req, res, log, error }) => {
   // 3. Tenta parsear o corpo da requisição (Webhook do Telegram ou CRON)
   let body = {};
   try {
-    body = req.bodyJson
+    body = JSON.parse(req.bodyJson)
     log(body); 
   } catch (err) {
     log('Erro ao fazer JSON.parse do req.payload', err);
