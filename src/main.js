@@ -9,8 +9,7 @@ export default async ({ req, res, log, error }) => {
     .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
     .setKey(req.headers['x-appwrite-key'] ?? '');
-  const users = new Users(client);
-
+  
   // The req object contains the request data
   if (req.path === "/ping") {
     // Use res object to respond with text(), json(), or binary()
