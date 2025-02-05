@@ -56,18 +56,21 @@ export default async ({ req, res, log, error }) => {
 
       // Calcula acertos do dia
       const acertosDia = Math.round(questoesDia * (percentualDia / 100));
-
-      await salvarDadosNoAppwrite(
-        database,
-        databaseId,
-        collectionId,
-        msg.from,         // { id, first_name, last_name, ... }
-        questoesDia,
-        acertosDia
-      );
-      await sendTelegramMessage(BOT_TOKEN, chatId, 
-        `📊 ${msg.from.first_name}, seus dados foram salvos com sucesso!`
-      );
+      let msgToSend =  "Jaspion"
+      try {
+        await salvarDadosNoAppwrite(
+          database,
+          databaseId,
+          collectionId,
+          msg.from,         // { id, first_name, last_name, ... }
+          questoesDia,
+          acertosDia
+        );
+        msgToSend = `📊 ${msg.from.first_name}, seus dados foram salvos com sucesso!`
+      } catch (error) {
+        msgToSend = `😱 houve um bug!!!`
+      }
+      await sendTelegramMessage(BOT_TOKEN, chatId, msgToSend);
       return res.json({ ok: true });
     }
   }
@@ -127,6 +130,7 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
     console.log(`Atualizado: ${from.first_name} (streak: ${novoDias}, questoes: ${novaQtdQuestoes}).`);
   } catch (error) {
     console.error("Erro ao salvar dados no Appwrite:", error);
+    throw error
   }
 }
 
