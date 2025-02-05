@@ -3,6 +3,8 @@ import TelegramBot from "node-telegram-bot-api";
 import moment from "moment-timezone";
 
 export default async ({ req, res, log, error }) => {
+
+  return res.text("oi")
   // You can use the Appwrite SDK to interact with other services
   // For this example, we're using the Users service
   const client = new Client()
