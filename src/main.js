@@ -33,7 +33,6 @@ export default async ({ req, res, log, error }) => {
     await rankingDia(database, databaseId, collectionId, BOT_TOKEN, DEFAULT_CHAT_ID);
     return res.json({ success: true, message: "Ranking gerado via CRON." });
   }
-  log(req)
   // 5. Caso seja um update do Telegram (contém "update_id" e "message")
   if (body.update_id && body.message) {
     const msg = body.message;
