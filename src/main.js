@@ -62,7 +62,7 @@ export default async ({ req, res, log, error }) => {
           database,
           databaseId,
           collectionId,
-          msg.from,         // { id, first_name, last_name, ... }
+          msg.from,         
           questoesDia,
           acertosDia
         );
