@@ -4,7 +4,7 @@ import moment from "moment-timezone";
 
 export default async ({ req, res, log, error }) => {
 
-  return res.text("oi")
+  return res.text("oi");
   // You can use the Appwrite SDK to interact with other services
   // For this example, we're using the Users service
   const client = new Client()
@@ -56,71 +56,71 @@ export default async ({ req, res, log, error }) => {
 
 };
 
-// Função para salvar ou atualizar os dados no Appwrite
-async function salvarDadosNoAppwrite(telegramId, acertosDia, percentualDia, firstName, lastName) {
-  try {
-    const nomeUsuario = lastName ? `${firstName} ${lastName}` : firstName;
-    const dataAtual = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
-    const response = await database.listDocuments(databaseId, collectionId, [
-      `equal('telefone', '${telegramId}')`
-    ]);
+// // Função para salvar ou atualizar os dados no Appwrite
+// async function salvarDadosNoAppwrite(telegramId, acertosDia, percentualDia, firstName, lastName) {
+//   try {
+//     const nomeUsuario = lastName ? `${firstName} ${lastName}` : firstName;
+//     const dataAtual = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
+//     const response = await database.listDocuments(databaseId, collectionId, [
+//       `equal('telefone', '${telegramId}')`
+//     ]);
 
-    if (response.documents.length > 0) {
-      const doc = response.documents[0];
-      await database.updateDocument(databaseId, collectionId, doc.$id, {
-        questoes_do_dia: acertosDia,
-        percentual_do_dia: percentualDia,
-        ultima_data: dataAtual
-      });
-    } else {
-      await database.createDocument(databaseId, collectionId, "unique()", {
-        telefone: telegramId,
-        dias: 1,
-        questoes: 0,
-        questoes_do_dia: acertosDia,
-        percentual: percentualDia,
-        percentual_do_dia: percentualDia,
-        ultima_data: dataAtual
-      });
-    }
-    console.log(`📊 Dados de ${nomeUsuario} foram atualizados no Appwrite!`);
-  } catch (error) {
-    console.error("Erro ao salvar dados no Appwrite:", error);
-  }
-}
+//     if (response.documents.length > 0) {
+//       const doc = response.documents[0];
+//       await database.updateDocument(databaseId, collectionId, doc.$id, {
+//         questoes_do_dia: acertosDia,
+//         percentual_do_dia: percentualDia,
+//         ultima_data: dataAtual
+//       });
+//     } else {
+//       await database.createDocument(databaseId, collectionId, "unique()", {
+//         telefone: telegramId,
+//         dias: 1,
+//         questoes: 0,
+//         questoes_do_dia: acertosDia,
+//         percentual: percentualDia,
+//         percentual_do_dia: percentualDia,
+//         ultima_data: dataAtual
+//       });
+//     }
+//     console.log(`📊 Dados de ${nomeUsuario} foram atualizados no Appwrite!`);
+//   } catch (error) {
+//     console.error("Erro ao salvar dados no Appwrite:", error);
+//   }
+// }
 
-// Gera e envia o ranking às 23h, resetando usuários inativos
-async function rankingDia() { 
-  try {
-    const dataAtual = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
-    const response = await database.listDocuments(databaseId, collectionId);
-    let usuarios = response.documents.map(doc => ({
-      telefone: doc.telefone,
-      dias: doc.ultima_data === dataAtual ? doc.dias + 1 : 0,
-      questoes: doc.questoes + doc.questoes_do_dia,
-      percentual: doc.percentual_do_dia,
-      nome: doc.telefone
-    }));
+// // Gera e envia o ranking às 23h, resetando usuários inativos
+// async function rankingDia() { 
+//   try {
+//     const dataAtual = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
+//     const response = await database.listDocuments(databaseId, collectionId);
+//     let usuarios = response.documents.map(doc => ({
+//       telefone: doc.telefone,
+//       dias: doc.ultima_data === dataAtual ? doc.dias + 1 : 0,
+//       questoes: doc.questoes + doc.questoes_do_dia,
+//       percentual: doc.percentual_do_dia,
+//       nome: doc.telefone
+//     }));
 
-    usuarios.sort((a, b) => b.dias - a.dias || b.questoes - a.questoes);
-    const medalhas = ["🥇", "🥈", "🥉"];
-    let mensagem = "🏆 *RANKING FINAL DO DIA* 🏆\n\n";
-    usuarios.slice(0, 10).forEach((user, index) => {
-      mensagem += `${medalhas[index] || ""} ${user.nome} - ${user.dias} dias - ${user.questoes} questões - ${user.percentual}%\n`;
-    });
+//     usuarios.sort((a, b) => b.dias - a.dias || b.questoes - a.questoes);
+//     const medalhas = ["🥇", "🥈", "🥉"];
+//     let mensagem = "🏆 *RANKING FINAL DO DIA* 🏆\n\n";
+//     usuarios.slice(0, 10).forEach((user, index) => {
+//       mensagem += `${medalhas[index] || ""} ${user.nome} - ${user.dias} dias - ${user.questoes} questões - ${user.percentual}%\n`;
+//     });
 
-    bot.sendMessage(CHAT_ID, mensagem, { parse_mode: "Markdown" });
+//     bot.sendMessage(CHAT_ID, mensagem, { parse_mode: "Markdown" });
 
-    // Atualiza o banco resetando usuários inativos
-    for (const user of response.documents) {
-      const novosDias = user.ultima_data === dataAtual ? user.dias + 1 : 0;
-      await database.updateDocument(databaseId, collectionId, user.$id, {
-        dias: novosDias,
-        questoes_do_dia: 0,
-        percentual_do_dia: 0
-      });
-    }
-  } catch (error) {
-    console.error("Erro ao gerar ranking e resetar usuários:", error);
-  }
-};
+//     // Atualiza o banco resetando usuários inativos
+//     for (const user of response.documents) {
+//       const novosDias = user.ultima_data === dataAtual ? user.dias + 1 : 0;
+//       await database.updateDocument(databaseId, collectionId, user.$id, {
+//         dias: novosDias,
+//         questoes_do_dia: 0,
+//         percentual_do_dia: 0
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Erro ao gerar ranking e resetar usuários:", error);
+//   }
+// };
