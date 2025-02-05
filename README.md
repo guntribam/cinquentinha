@@ -2,7 +2,7 @@
 
 A simple starter function. Edit `src/main.js` to get started and create something awesome! 🚀
 Gunter!!
-
+Alex!!
 ## 🧰 Usage
 
 ### GET /ping
