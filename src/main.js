@@ -67,7 +67,8 @@ export default async ({ req, res, log, error }) => {
           acertosDia
         );
         msgToSend = `📊 ${msg.from.first_name}, seus dados foram salvos com sucesso!`
-      } catch (error) {
+      } catch (dbError) {
+        error(dbError)
         msgToSend = `😱 houve um bug!!!`
       }
       await sendTelegramMessage(BOT_TOKEN, chatId, msgToSend);
