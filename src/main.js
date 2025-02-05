@@ -22,12 +22,13 @@ export default async ({ req, res, log, error }) => {
   // 3. Tenta parsear o corpo da requisição (Webhook do Telegram ou CRON)
   let body = {};
   try {
-    body = JSON.parse(req.bodyJson)
+    body = req.bodyJson
     log(body); 
   } catch (err) {
     log('Erro ao fazer JSON.parse do req.payload', err);
   }
   
+  log(body.update_id); 
   // 4. Se for chamada de CRON (ex.: {"cron":true}), gera o ranking
   if (body.cron === true) {
     await rankingDia(database, databaseId, collectionId, BOT_TOKEN, DEFAULT_CHAT_ID);
