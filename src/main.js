@@ -1,4 +1,4 @@
-import { Client, Databases } from 'node-appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
 import moment from 'moment-timezone';
 
 export default async ({ req, res, log, error }) => {
@@ -19,7 +19,7 @@ export default async ({ req, res, log, error }) => {
 
   // 4. Lê o body da requisição
   const body = req.bodyJson ?? {};
-  log(`init-body-------\n${body}\nend-body-------`);
+  log(`init-body-------\n${JSON.stringify(body, null, 2)}\nend-body-------`);
 
   // 5. Se for CRON (por ex.: {"cron": true}), gera o ranking
   if (body.cron === true) {
@@ -91,7 +91,7 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
 
     // Busca doc do usuário
     const response = await database.listDocuments(databaseId, collectionId, [
-      `equal('telegram_id', '${telegramId}')`
+      Query.equal('telegram_id', `${telegramId}`)
     ]);
 
     // Se não existir, cria do zero
