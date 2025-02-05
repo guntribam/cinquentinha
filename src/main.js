@@ -1,47 +1,39 @@
 import { Client, Databases } from 'node-appwrite';
 import moment from 'moment-timezone';
 
-/**
- * Função principal exportada para o Appwrite.
- */
 export default async ({ req, res, log, error }) => {
-  // 1. Inicia o client do Appwrite
+  // 1. Inicia o cliente do Appwrite
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
     .setKey(req.headers['x-appwrite-key'] ?? '');
 
+  // 2. Define Database e Collection
   const database = new Databases(client);
-  const databaseId = "67a181ae00117541a360";
-  const collectionId = "67a25399002c05c91fcc";
+  const databaseId = process.env.DATABASE_ID;   
+  const collectionId = process.env.COLLECTION_ID; 
 
-  // 2. Lê variáveis de ambiente do Telegram
+  // 3. Variáveis de ambiente do Telegram
   const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  const DEFAULT_CHAT_ID = process.env.TELEGRAM_CHAT_ID; // Chat padrão (opcional)
+  const DEFAULT_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-  // 3. Tenta parsear o corpo da requisição (Webhook do Telegram ou CRON)
-  let body = {};
-  try {
-    body = req.bodyJson
-    log(body); 
-  } catch (err) {
-    log('Erro ao fazer JSON.parse do req.payload', err);
-  }
-  
-  log(body.update_id); 
-  // 4. Se for chamada de CRON (ex.: {"cron":true}), gera o ranking
+  // 4. Lê o body da requisição
+  const body = req.bodyJson ?? {};
+  log(`init-body-------\n${body}\nend-body-------`);
+
+  // 5. Se for CRON (por ex.: {"cron": true}), gera o ranking
   if (body.cron === true) {
     await rankingDia(database, databaseId, collectionId, BOT_TOKEN, DEFAULT_CHAT_ID);
     return res.json({ success: true, message: "Ranking gerado via CRON." });
   }
-  // 5. Caso seja um update do Telegram (contém "update_id" e "message")
+
+  // 6. Se for update do Telegram
   if (body.update_id && body.message) {
     const msg = body.message;
     const text = msg.text || "";
     const chatId = msg.chat.id;
-    log({msg, text, chatId})
 
-    // Comando /start
+    // /start
     if (text.startsWith('/start')) {
       await sendTelegramMessage(BOT_TOKEN, chatId, 
         "✅ Bot iniciado!\n\n📌 Use `/ranking` para ver o ranking."
@@ -49,25 +41,29 @@ export default async ({ req, res, log, error }) => {
       return res.json({ ok: true });
     }
 
-    // Comando /ranking (imediato, solicitado pelo usuário)
+    // /ranking
     if (text.startsWith('/ranking')) {
       await rankingDia(database, databaseId, collectionId, BOT_TOKEN, chatId);
       return res.json({ ok: true });
     }
 
-    // Mensagem no formato "23/63%"
+    // Mensagem no formato "NN/PP%"
     const regex = /^(\d+)\/(\d+)%$/;
     const match = text.match(regex);
     if (match) {
-      const acertosDia = parseInt(match[1]);
+      const questoesDia = parseInt(match[1]);
       const percentualDia = parseFloat(match[2]);
+
+      // Calcula acertos do dia
+      const acertosDia = Math.round(questoesDia * (percentualDia / 100));
+
       await salvarDadosNoAppwrite(
         database,
         databaseId,
         collectionId,
-        msg.from,
-        acertosDia,
-        percentualDia
+        msg.from,         // { id, first_name, last_name, ... }
+        questoesDia,
+        acertosDia
       );
       await sendTelegramMessage(BOT_TOKEN, chatId, 
         `📊 ${msg.from.first_name}, seus dados foram salvos com sucesso!`
@@ -76,22 +72,141 @@ export default async ({ req, res, log, error }) => {
     }
   }
 
-  // Se não se encaixar em nada, retornamos ok.
+  // 7. Se não se encaixa em nada
   return res.json({ ok: true, message: "Nothing to process." });
 };
 
 /**
- * Envia mensagem ao Telegram usando fetch nativo (Node 18+).
+ * Salva/atualiza documento do usuário no Appwrite.
+ */
+async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, questoesDia, acertosDia) {
+  try {
+    const telegramId = from.id.toString();
+    const hoje = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
+    const ontem = moment().tz("America/Sao_Paulo").subtract(1, 'day').format("YYYY-MM-DD");
+
+    // Busca doc do usuário
+    const response = await database.listDocuments(databaseId, collectionId, [
+      `equal('telegram_id', '${telegramId}')`
+    ]);
+
+    // Se não existir, cria do zero
+    if (response.documents.length === 0) {
+      await database.createDocument(databaseId, collectionId, 'unique()', {
+        telegram_id: telegramId,
+        dias: 1,
+        questoes: questoesDia,
+        acertos: acertosDia,
+        ultima_data: hoje
+      });
+      console.log(`Criado: ${from.first_name} (novo usuário).`);
+      return;
+    }
+
+    // Senão, atualiza
+    const doc = response.documents[0];
+    let novoDias = doc.dias;
+
+    // Verifica se continua streak
+    if (doc.ultima_data === ontem) {
+      // incrementa streak
+      novoDias++;
+    } else if (doc.ultima_data !== hoje) {
+      // se não for ontem nem hoje, reseta
+      novoDias = 1;
+    }
+    const novaQtdQuestoes = doc.questoes + questoesDia;
+    const novaQtdAcertos = doc.acertos + acertosDia;
+
+    await database.updateDocument(databaseId, collectionId, doc.$id, {
+      dias: novoDias,
+      questoes: novaQtdQuestoes,
+      acertos: novaQtdAcertos,
+      ultima_data: hoje
+    });
+    console.log(`Atualizado: ${from.first_name} (streak: ${novoDias}, questoes: ${novaQtdQuestoes}).`);
+  } catch (error) {
+    console.error("Erro ao salvar dados no Appwrite:", error);
+  }
+}
+
+/**
+ * Gera e envia o ranking do dia, chamando via CRON ou manualmente (/ranking).
+ */
+async function rankingDia(database, databaseId, collectionId, botToken, chatId) {
+  try {
+    const hoje = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
+    const response = await database.listDocuments(databaseId, collectionId);
+
+    // 1) Para cada doc, zera "dias" se não enviou hoje
+    //    (ou seja, se ultima_data != hoje => dias=0)
+    //    mas antes capturamos os dados para exibir o ranking "pré-reset" ou "pós-reset",
+    //    depende da sua preferência. Aqui, vamos exibir com o streak atualizado:
+    let usuarios = [];
+    for (const doc of response.documents) {
+      // Se não postou hoje, streak = 0
+      let diasAtual = (doc.ultima_data === hoje) ? doc.dias : 0;
+
+      // Calcula percentual “on the fly”
+      const percentual = doc.questoes > 0 
+        ? (doc.acertos / doc.questoes) * 100 
+        : 0;
+
+      usuarios.push({
+        $id: doc.$id,
+        telegram_id: doc.telegram_id,
+        dias: diasAtual,
+        questoes: doc.questoes,
+        acertos: doc.acertos,
+        percentual
+      });
+    }
+
+    // 2) Ordena => maior `dias`, depois `questoes`, depois `percentual`
+    usuarios.sort((a, b) => {
+      if (b.dias !== a.dias) return b.dias - a.dias;
+      if (b.questoes !== a.questoes) return b.questoes - a.questoes;
+      return b.percentual - a.percentual;
+    });
+
+    // 3) Monta mensagem do ranking
+    const medalhas = ["🥇", "🥈", "🥉"];
+    let mensagem = "🏆 *RANKING FINAL DO DIA* 🏆\n\n";
+    usuarios.forEach((user, index) => {
+      const medalha = medalhas[index] || `${index+1}º)`;
+      mensagem += `${medalha} [${user.telegram_id}] - ` + 
+                  `${user.dias} dias - ` +
+                  `${user.questoes} questões - ` +
+                  `${user.percentual.toFixed(1)}%\n`;
+    });
+
+    // 4) Envia ranking
+    await sendTelegramMessage(botToken, chatId, mensagem, "Markdown");
+
+    // 5) Agora persiste "dias=0" em quem não enviou hoje (reset real no banco).
+    const promises = response.documents
+      .filter((doc) => doc.ultima_data !== hoje)
+      .map((doc) => {
+        return database.updateDocument(databaseId, collectionId, doc.$id, {
+          dias: 0
+        });
+      });
+
+    await Promise.all(promises);
+
+    console.log("Ranking gerado e reset concluído!");
+  } catch (error) {
+    console.error("Erro ao gerar ranking e resetar usuários:", error);
+  }
+}
+
+/**
+ * Envia mensagem ao Telegram (usando fetch nativo em Node 18+).
  */
 async function sendTelegramMessage(botToken, chatId, text, parseMode = null) {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-  const body = {
-    chat_id: chatId,
-    text
-  };
-  if (parseMode) {
-    body.parse_mode = parseMode;
-  }
+  const body = { chat_id: chatId, text };
+  if (parseMode) body.parse_mode = parseMode;
 
   try {
     const response = await fetch(url, {
@@ -100,113 +215,8 @@ async function sendTelegramMessage(botToken, chatId, text, parseMode = null) {
       body: JSON.stringify(body),
     });
     const data = await response.json();
-
-    // Opcional: logar a resposta do Telegram
-    console.log("Resposta Telegram:", data);
+    console.log("Resposta do Telegram:", data);
   } catch (err) {
     console.error("Erro ao enviar mensagem ao Telegram:", err);
-  }
-}
-
-/**
- * Salva ou atualiza dados no Appwrite, conforme seu exemplo anterior.
- */
-async function salvarDadosNoAppwrite(
-  database,
-  databaseId,
-  collectionId,
-  from,
-  acertosDia,
-  percentualDia
-) {
-  try {
-    const nomeUsuario = from.last_name
-      ? `${from.first_name} ${from.last_name}`
-      : from.first_name;
-
-    const telegramId = from.id.toString();
-    const dataAtual = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
-
-    const response = await database.listDocuments(databaseId, collectionId, [
-      `equal('telefone', '${telegramId}')`
-    ]);
-
-    if (response.documents.length > 0) {
-      // Se o doc existir, atualiza
-      const doc = response.documents[0];
-      await database.updateDocument(databaseId, collectionId, doc.$id, {
-        questoes_do_dia: acertosDia,
-        percentual_do_dia: percentualDia,
-        ultima_data: dataAtual
-      });
-    } else {
-      // Caso não exista, cria um novo
-      await database.createDocument(databaseId, collectionId, 'unique()', {
-        telefone: telegramId,
-        dias: 1,
-        questoes: 0,
-        questoes_do_dia: acertosDia,
-        percentual: percentualDia,
-        percentual_do_dia: percentualDia,
-        ultima_data: dataAtual
-      });
-    }
-    console.log(`📊 Dados de ${nomeUsuario} foram atualizados no Appwrite!`);
-  } catch (error) {
-    console.error("Erro ao salvar dados no Appwrite:", error);
-  }
-}
-
-/**
- * Gera e envia o ranking do dia (chamado via CRON ou manualmente via `/ranking`).
- */
-async function rankingDia(database, databaseId, collectionId, botToken, chatId) {
-  try {
-    const dataAtual = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
-    const response = await database.listDocuments(databaseId, collectionId);
-
-    let usuarios = response.documents.map(doc => {
-      const dias = (doc.ultima_data === dataAtual) ? (doc.dias + 1) : 0;
-      const questoes = doc.questoes + doc.questoes_do_dia;
-      const percentual = doc.percentual_do_dia;  // Ajustar se quiser outra lógica
-
-      return {
-        $id: doc.$id,
-        telefone: doc.telefone,
-        dias,
-        questoes,
-        percentual
-      };
-    });
-
-    // Ordena pelo maior "dias", depois "questoes"
-    usuarios.sort((a, b) => (b.dias - a.dias) || (b.questoes - a.questoes));
-
-    // Top 10
-    const medalhas = ["🥇", "🥈", "🥉"];
-    let mensagem = "🏆 *RANKING FINAL DO DIA* 🏆\n\n";
-    usuarios.slice(0, 10).forEach((user, index) => {
-      const medalha = medalhas[index] || "";
-      mensagem += `${medalha} ${user.telefone} - ${user.dias} dias - ${user.questoes} questões - ${user.percentual}%\n`;
-    });
-
-    // Envia ranking ao chat
-    await sendTelegramMessage(botToken, chatId, mensagem, "Markdown");
-
-    // Reseta infos de quem não participou hoje
-    for (const user of response.documents) {
-      const novosDias = (user.ultima_data === dataAtual) 
-        ? (user.dias + 1) 
-        : 0;
-      await database.updateDocument(databaseId, collectionId, user.$id, {
-        dias: novosDias,
-        questoes_do_dia: 0,
-        percentual_do_dia: 0
-      });
-    }
-
-    console.log("Ranking gerado e reset concluído!");
-  } catch (error) {
-    console.error("Erro ao gerar ranking e resetar usuários:", error);
   }
 }
