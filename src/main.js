@@ -191,7 +191,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
 
     usuarios.forEach((user, index) => {
       const posicao = medalhas[index] || (index + 1).toString();
-      mensagem += pad(posicao, index > 2 ? 6 : 12)
+      mensagem += pad(posicao, index > 2 ? 7 : 12)
         + pad(user.whoami, 30)
         + pad(user.dias, 6)
         + pad(user.questoes, 10)
