@@ -110,25 +110,23 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
     // Senão, atualiza
     const doc = response.documents[0];
     let novoDias = doc.dias;
-    let novaQtdQuestoes = questoesDia;
-    let novaQtdAcertos = acertosDia;
+    let novaQtdQuestoes = questoesDia + doc.questoes;
+    let novaQtdAcertos = acertosDia + doc.acertos;
+
+    let ehHoje = doc.ultima_data === hoje
 
     // Verifica se continua streak
     if (doc.ultima_data === ontem) {
       novoDias++;
-      novaQtdQuestoes += doc.questoes
-      novaQtdAcertos += doc.acertos
     } else if (doc.ultima_data !== hoje) {
       novoDias = 1;
-      novaQtdQuestoes += doc.questoes
-      novaQtdAcertos += doc.acertos
     } 
     
     await database.updateDocument(databaseId, collectionId, doc.$id, {
       dias: novoDias,
       whoami: doc.whoami,
-      questoes: novaQtdQuestoes,
-      acertos: novaQtdAcertos,
+      questoes: ehHoje ? doc.questoes : novaQtdQuestoes,
+      acertos: ehHoje ? doc.acertos :  novaQtdAcertos,
       ultima_data: hoje
     });
     console.log(`Atualizado: ${from.first_name} (streak: ${novoDias}, questoes: ${novaQtdQuestoes}).`);
