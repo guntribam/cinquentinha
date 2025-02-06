@@ -175,21 +175,25 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
     // 3) Monta mensagem do ranking em formato de tabela Markdown
     const medalhas = ["🥇", "🥈", "🥉"];
     let mensagem = "<b>🏆 RANKING FINAL DO DIA 🏆</b>\n\n";
-    mensagem += "<table border='1' cellpadding='4' cellspacing='0'>";
-    mensagem += "<tr><th>Pos</th><th>Usuário</th><th>Dias</th><th>Qtd</th><th>Acertos</th></tr>";
+
+    // Inicia bloco monoespaçado
+    mensagem += "<pre>";
+
+    // Cabeçalho manual (com espaçamento)
+    mensagem += pad("Pos", 4) + pad("Usuário", 12) + pad("Dias", 6) + pad("Qtd", 6) + pad("Acertos", 8) + "\n";
+    mensagem += pad("---", 4) + pad("-------", 12) + pad("----", 6) + pad("---", 6) + pad("-------", 8) + "\n";
 
     usuarios.forEach((user, index) => {
       const posicao = medalhas[index] || (index + 1).toString();
-      mensagem += `<tr>
-                 <td>${posicao}</td>
-                 <td>${user.whoami}</td>
-                 <td>${user.dias}</td>
-                 <td>${user.questoes}</td>
-                 <td>${user.acertos}</td>
-               </tr>`;
+      mensagem += pad(posicao, 4)
+        + pad(user.whoami, 12)
+        + pad(user.dias, 6)
+        + pad(user.questoes, 6)
+        + pad(user.acertos, 8)
+        + "\n";
     });
 
-    mensagem += "</table>";
+    mensagem += "</pre>"; // Fecha bloco monoespaçado
 
     // 4) Envia ranking
     await sendTelegramMessage(botToken, chatId, mensagem, "HTML");
@@ -230,4 +234,10 @@ async function sendTelegramMessage(botToken, chatId, text, parseMode = null) {
   } catch (err) {
     console.error("Erro ao enviar mensagem ao Telegram:", err);
   }
+}
+
+function pad(str, length) {
+  str = str.toString();
+  if (str.length > length) return str.slice(0, length);
+  return str + " ".repeat(length - str.length);
 }
