@@ -10,8 +10,8 @@ export default async ({ req, res, log, error }) => {
 
   // 2. Define Database e Collection
   const database = new Databases(client);
-  const databaseId = process.env.DATABASE_ID;   
-  const collectionId = process.env.COLLECTION_ID; 
+  const databaseId = process.env.DATABASE_ID;
+  const collectionId = process.env.COLLECTION_ID;
 
   // 3. Variáveis de ambiente do Telegram
   const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -35,7 +35,7 @@ export default async ({ req, res, log, error }) => {
 
     // /start
     if (text.startsWith('/start')) {
-      await sendTelegramMessage(BOT_TOKEN, chatId, 
+      await sendTelegramMessage(BOT_TOKEN, chatId,
         "✅ Bot iniciado!\n\n📌 Use `/ranking` para ver o ranking."
       );
       return res.json({ ok: true });
@@ -54,13 +54,13 @@ export default async ({ req, res, log, error }) => {
       const questoesDia = parseInt(match[1]);
       const acertosDia = parseFloat(match[2]);
 
-      let msgToSend =  "Jaspion"
+      let msgToSend = "Jaspion"
       try {
         await salvarDadosNoAppwrite(
           database,
           databaseId,
           collectionId,
-          msg.from,         
+          msg.from,
           questoesDia,
           acertosDia
         );
@@ -120,13 +120,13 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
       novoDias++;
     } else if (doc.ultima_data !== hoje) {
       novoDias = 1;
-    } 
-    
+    }
+
     await database.updateDocument(databaseId, collectionId, doc.$id, {
       dias: novoDias,
       whoami: doc.whoami,
       questoes: ehHoje ? doc.questoes : novaQtdQuestoes,
-      acertos: ehHoje ? doc.acertos :  novaQtdAcertos,
+      acertos: ehHoje ? doc.acertos : novaQtdAcertos,
       ultima_data: hoje
     });
     console.log(`Atualizado: ${from.first_name} (streak: ${novoDias}, questoes: ${novaQtdQuestoes}).`);
@@ -153,7 +153,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
       // Se não postou hoje, streak = 0
       let diasAtual = (doc.ultima_data === hoje) ? doc.dias : 0;
 
-      
+
 
       usuarios.push({
         $id: doc.$id,
@@ -174,20 +174,25 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
 
     // 3) Monta mensagem do ranking em formato de tabela Markdown
     const medalhas = ["🥇", "🥈", "🥉"];
-    let mensagem = "🏆 *RANKING FINAL DO DIA* 🏆\n\n";
+    let mensagem = "<b>🏆 RANKING FINAL DO DIA 🏆</b>\n\n";
+    mensagem += "<table border='1' cellpadding='4' cellspacing='0'>";
+    mensagem += "<tr><th>Pos</th><th>Usuário</th><th>Dias</th><th>Qtd</th><th>Acertos</th></tr>";
 
-    // Cabeçalho da tabela
-    mensagem += "| #  | Usuário        | Dias | Questões | Acertos |\n";
-    mensagem += "|----|----------------|------|----------|---------|\n";
-
-    // Linhas do ranking
     usuarios.forEach((user, index) => {
-      const posicao = medalhas[index] || `${index + 1}º`;
-      mensagem += `| ${posicao} | ${user.whoami} | ${user.dias} | ${user.questoes} | ${user.acertos} |\n`;
+      const posicao = medalhas[index] || (index + 1).toString();
+      mensagem += `<tr>
+                 <td>${posicao}</td>
+                 <td>${user.whoami}</td>
+                 <td>${user.dias}</td>
+                 <td>${user.questoes}</td>
+                 <td>${user.acertos}</td>
+               </tr>`;
     });
 
+    mensagem += "</table>";
+
     // 4) Envia ranking
-    await sendTelegramMessage(botToken, chatId, mensagem, "MarkdownV2");
+    await sendTelegramMessage(botToken, chatId, mensagem, "HTML");
 
     // 5) Agora persiste "dias=0" em quem não enviou hoje (reset real no banco).
     const promises = response.documents
