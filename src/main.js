@@ -187,7 +187,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
     });
 
     // 4) Envia ranking
-    await sendTelegramMessage(botToken, chatId, mensagem, "Markdown");
+    await sendTelegramMessage(botToken, chatId, mensagem, "MarkdownV2");
 
     // 5) Agora persiste "dias=0" em quem não enviou hoje (reset real no banco).
     const promises = response.documents
