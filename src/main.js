@@ -97,7 +97,7 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
     if (response.documents.length === 0) {
       await database.createDocument(databaseId, collectionId, 'unique()', {
         telegram_id: telegramId,
-        whoami: `${msg.from.first_name || 'nameless'}${telegramId.slice(-2)}`,
+        whoami: `${from.first_name || 'nameless'}${telegramId.slice(-2)}`,
         dias: 1,
         questoes: questoesDia,
         acertos: acertosDia,
