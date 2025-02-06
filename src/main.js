@@ -172,15 +172,18 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
       return b.acertos - a.acertos;
     });
 
-    // 3) Monta mensagem do ranking
+    // 3) Monta mensagem do ranking em formato de tabela Markdown
     const medalhas = ["🥇", "🥈", "🥉"];
     let mensagem = "🏆 *RANKING FINAL DO DIA* 🏆\n\n";
+
+    // Cabeçalho da tabela
+    mensagem += "| #  | Usuário        | Dias | Questões | Acertos |\n";
+    mensagem += "|----|----------------|------|----------|---------|\n";
+
+    // Linhas do ranking
     usuarios.forEach((user, index) => {
-      const medalha = medalhas[index] || `${index+1}º)`;
-      mensagem += `${medalha} [${user.whoami}] - ` + 
-                  `${user.dias} dias - ` +
-                  `${user.questoes} questões - ` +
-                  `${user.acertos} acertos\n`;
+      const posicao = medalhas[index] || `${index + 1}º`;
+      mensagem += `| ${posicao} | ${user.whoami} | ${user.dias} | ${user.questoes} | ${user.acertos} |\n`;
     });
 
     // 4) Envia ranking
