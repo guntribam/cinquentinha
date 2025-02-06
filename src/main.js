@@ -110,18 +110,18 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
     // Senão, atualiza
     const doc = response.documents[0];
     let novoDias = doc.dias;
-    let novaQtdQuestoes = doc.questoes;
-    let novaQtdAcertos = doc.acertos;
+    let novaQtdQuestoes = questoesDia;
+    let novaQtdAcertos = acertosDia;
 
     // Verifica se continua streak
     if (doc.ultima_data === ontem) {
       novoDias++;
-      novaQtdQuestoes += questoesDia
-      novaQtdAcertos += acertosDia
+      novaQtdQuestoes += doc.questoes
+      novaQtdAcertos += doc.acertos
     } else if (doc.ultima_data !== hoje) {
       novoDias = 1;
-      novaQtdQuestoes += questoesDia
-      novaQtdAcertos += acertosDia
+      novaQtdQuestoes += doc.questoes
+      novaQtdAcertos += doc.acertos
     } 
     
     await database.updateDocument(databaseId, collectionId, doc.$id, {
