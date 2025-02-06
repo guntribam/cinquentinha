@@ -43,7 +43,13 @@ export default async ({ req, res, log, error }) => {
 
     // /ranking
     if (text.startsWith('/ranking')) {
-      await rankingDia(database, databaseId, collectionId, BOT_TOKEN, chatId);
+      if(msg.from.first_name.trim() !== "Gunter"){
+        await sendTelegramMessage(BOT_TOKEN, chatId,
+          "🙅🏼‍♂️Somente o comandante supremo pode solicitar o ranking🙅🏼‍♂️"
+        );
+      }else{
+        await rankingDia(database, databaseId, collectionId, BOT_TOKEN, chatId);
+      }
       return res.json({ ok: true });
     }
 
