@@ -65,6 +65,7 @@ export default async ({ req, res, log, error }) => {
           acertosDia
         );
         msgToSend = `📊 ${msg.from.first_name}, seus dados foram salvos com sucesso!`
+        log(msg.from)
       } catch (dbError) {
         error(dbError)
         msgToSend = `😱 houve um bug!!!`
@@ -178,7 +179,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
       mensagem += `${medalha} [${user.telegram_id}] - ` + 
                   `${user.dias} dias - ` +
                   `${user.questoes} questões - ` +
-                  `${user.acertos}\n`;
+                  `${user.acertos} acertos\n`;
     });
 
     // 4) Envia ranking
