@@ -158,6 +158,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
       usuarios.push({
         $id: doc.$id,
         telegram_id: doc.telegram_id,
+        whoami: doc.whoami,
         dias: diasAtual,
         questoes: doc.questoes,
         acertos: doc.acertos,
@@ -176,7 +177,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
     let mensagem = "🏆 *RANKING FINAL DO DIA* 🏆\n\n";
     usuarios.forEach((user, index) => {
       const medalha = medalhas[index] || `${index+1}º)`;
-      mensagem += `${medalha} [${user.telegram_id}] - ` + 
+      mensagem += `${medalha} [${user.whoami}] - ` + 
                   `${user.dias} dias - ` +
                   `${user.questoes} questões - ` +
                   `${user.acertos} acertos\n`;
