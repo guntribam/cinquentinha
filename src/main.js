@@ -18,6 +18,7 @@ export default async ({ req, res, log, error }) => {
   const DEFAULT_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
   // 4. Lê o body da requisição
+  log(req)
   const body = req.bodyJson ?? {};
   log(`init-body-------\n${JSON.stringify(body, null, 2)}\nend-body-------`);
 
