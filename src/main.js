@@ -126,6 +126,7 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
     
     await database.updateDocument(databaseId, collectionId, doc.$id, {
       dias: novoDias,
+      whoami: doc.whoami,
       questoes: novaQtdQuestoes,
       acertos: novaQtdAcertos,
       ultima_data: hoje
