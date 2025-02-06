@@ -48,14 +48,12 @@ export default async ({ req, res, log, error }) => {
     }
 
     // Mensagem no formato "NN/PP%"
-    const regex = /^(\d+)\/(\d+)%$/;
+    const regex = /^(\d+)\/(\d+)$/;
     const match = text.match(regex);
     if (match) {
       const questoesDia = parseInt(match[1]);
-      const percentualDia = parseFloat(match[2]);
+      const acertosDia = parseFloat(match[2]);
 
-      // Calcula acertos do dia
-      const acertosDia = Math.round(questoesDia * (percentualDia / 100));
       let msgToSend =  "Jaspion"
       try {
         await salvarDadosNoAppwrite(
@@ -110,18 +108,20 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
     // Senão, atualiza
     const doc = response.documents[0];
     let novoDias = doc.dias;
+    let novaQtdQuestoes = doc.questoes;
+    let novaQtdAcertos = doc.acertos;
 
     // Verifica se continua streak
     if (doc.ultima_data === ontem) {
-      // incrementa streak
       novoDias++;
+      novaQtdQuestoes += questoesDia
+      novaQtdAcertos += acertosDia
     } else if (doc.ultima_data !== hoje) {
-      // se não for ontem nem hoje, reseta
       novoDias = 1;
-    }
-    const novaQtdQuestoes = doc.questoes + questoesDia;
-    const novaQtdAcertos = doc.acertos + acertosDia;
-
+      novaQtdQuestoes += questoesDia
+      novaQtdAcertos += acertosDia
+    } 
+    
     await database.updateDocument(databaseId, collectionId, doc.$id, {
       dias: novoDias,
       questoes: novaQtdQuestoes,
@@ -152,10 +152,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
       // Se não postou hoje, streak = 0
       let diasAtual = (doc.ultima_data === hoje) ? doc.dias : 0;
 
-      // Calcula percentual “on the fly”
-      const percentual = doc.questoes > 0 
-        ? (doc.acertos / doc.questoes) * 100 
-        : 0;
+      
 
       usuarios.push({
         $id: doc.$id,
@@ -163,7 +160,6 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
         dias: diasAtual,
         questoes: doc.questoes,
         acertos: doc.acertos,
-        percentual
       });
     }
 
@@ -171,7 +167,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
     usuarios.sort((a, b) => {
       if (b.dias !== a.dias) return b.dias - a.dias;
       if (b.questoes !== a.questoes) return b.questoes - a.questoes;
-      return b.percentual - a.percentual;
+      return b.acertos - a.acertos;
     });
 
     // 3) Monta mensagem do ranking
@@ -182,7 +178,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
       mensagem += `${medalha} [${user.telegram_id}] - ` + 
                   `${user.dias} dias - ` +
                   `${user.questoes} questões - ` +
-                  `${user.percentual.toFixed(1)}%\n`;
+                  `${user.acertos}\n`;
     });
 
     // 4) Envia ranking
