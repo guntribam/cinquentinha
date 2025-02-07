@@ -187,13 +187,13 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
     mensagem += "<pre>";
 
     // Cabeçalho manual (com espaçamento)
-    mensagem += pad("#", 3) + pad("Usuário", 10) + pad("D", 3) + pad("Q", 3) + pad("A", 3) + "\n";
-    mensagem += pad("--", 3) + pad("-------", 10) + pad("---", 3) + pad("-----", 3) + pad("-----", 3) + "\n";
+    mensagem += pad("#", 3) + pad("Usuário", 15) + pad("D", 3) + pad("Q", 3) + pad("A", 3) + "\n";
+    mensagem += pad("--", 3) + pad("-------", 15) + pad("---", 3) + pad("-----", 3) + pad("-----", 3) + "\n";
 
     usuarios.forEach((user, index) => {
       const posicao = medalhas[index] || (index + 1).toString();
-      mensagem += pad(posicao, index > 2 ? 2 : 3)
-        + pad(user.whoami, 10)
+      mensagem += pad(posicao, index > 2 ? 3 : 3)
+        + pad(user.whoami, 15)
         + pad(user.dias, 3)
         + pad(user.questoes, 3)
         + pad(user.acertos, 3)
