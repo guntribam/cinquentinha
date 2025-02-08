@@ -148,7 +148,7 @@ async function salvarDadosNoAppwrite(database, databaseId, collectionId, from, q
  */
 async function rankingDia(database, databaseId, collectionId, botToken, chatId) {
   try {
-    const hoje = "2025-02-07"
+    const hoje = moment().tz("America/Sao_Paulo").format("YYYY-MM-DD");
     const response = await database.listDocuments(databaseId, collectionId);
 
     // 1) Para cada doc, zera "dias" se não enviou hoje
