@@ -195,7 +195,7 @@ async function rankingDia(database, databaseId, collectionId, botToken, chatId) 
       mensagem += pad(posicao, index > 2 ? 3 : 3)
         + pad(user.whoami, 15)
         + pad(user.dias, 4)
-        + pad(user.questoes, 4)
+        + pad(user.questoes, 5)
         + pad(user.acertos, 4)
         + "\n";
     });
