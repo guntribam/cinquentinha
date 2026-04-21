@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0a0a0a" />
+<title>Cinquentinha · DevEstável</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111111;
+    --bg-elevated: #171717;
+    --border: #1f1f1f;
+    --border-strong: #2a2a2a;
+    --text: #f5f5f5;
+    --text-dim: #888888;
+    --text-faint: #555555;
+    --accent: #22d3ee;
+    --accent-dim: #0e7490;
+    --accent-glow: rgba(34, 211, 238, 0.15);
+    --success: #34d399;
+    --danger: #f87171;
+    --warn: #fbbf24;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --display: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% 0%, var(--accent-glow), transparent 70%),
+      linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+    background-attachment: fixed;
+  }
+
+  /* Grid texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+    position: relative;
+  }
+
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    opacity: 0.3;
+  }
+
+  .brand-text {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-text span {
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .user-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 6px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .user-pill:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  /* ===== AUTH CARD ===== */
+  .auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px 24px;
+    margin-top: 40px;
+  }
+
+  .auth-intro {
+    margin-bottom: 24px;
+  }
+
+  .auth-label {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .auth-title {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .auth-sub {
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .field-input {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field-input:focus {
+    border-color: var(--accent);
+  }
+
+  .field-input::placeholder {
+    color: var(--text-faint);
+  }
+
+  .btn {
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+    margin-top: 8px;
+  }
+
+  .btn:hover:not(:disabled) {
+    background: #67e8f9;
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border-strong);
+    font-weight: 500;
+    margin-top: 12px;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    color: var(--text);
+    border-color: var(--accent);
+    background: transparent;
+    transform: none;
+  }
+
+  .auth-toggle {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .auth-toggle a {
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .auth-toggle a:hover {
+    text-decoration: underline;
+  }
+
+  /* ===== FEEDBACK ===== */
+  .feedback {
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    border-left: 3px solid;
+    background: var(--bg-elevated);
+  }
+
+  .feedback.error {
+    border-color: var(--danger);
+    color: #fca5a5;
+  }
+
+  .feedback.success {
+    border-color: var(--success);
+    color: #6ee7b7;
+  }
+
+  /* ===== DASHBOARD ===== */
+  .greeting {
+    margin-bottom: 28px;
+  }
+
+  .greeting-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .greeting-name {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .today-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .today-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+  }
+
+  .date-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .date-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .date-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-faint);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .status-dot.active {
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+  }
+
+  .status-dot.pending {
+    background: var(--warn);
+    box-shadow: 0 0 8px var(--warn);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .metric-input {
+    position: relative;
+  }
+
+  .metric-suffix {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-faint);
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  .metric-input .field-input {
+    padding-right: 32px;
+  }
+
+  /* ===== TODAY STATUS ===== */
+  .today-status {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .today-status strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ===== HISTORY ===== */
+  .history-section {
+    margin-top: 24px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .section-meta {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .history-list {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .history-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .history-item:last-child {
+    border-bottom: none;
+  }
+
+  .history-date {
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .history-questions {
+    color: var(--text);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .history-accuracy {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    min-width: 48px;
+    text-align: right;
+  }
+
+  .empty-state {
+    padding: 32px 20px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+  }
+
+  /* ===== LOADING ===== */
+  .loader {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--bg);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .hidden { display: none !important; }
+
+  /* ===== UTIL ===== */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    padding: 12px 10px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .stat-value.accent {
+    color: var(--accent);
+  }
+
+  /* Page transition */
+  .view {
+    animation: fadeUp 0.4s ease-out;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 380px) {
+    .auth-title { font-size: 24px; }
+    .greeting-name { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">50</div>
+      <div class="brand-text">cinquentinha<span> / devestável</span></div>
+    </div>
+    <button id="logoutBtn" class="user-pill hidden">sair</button>
+  </header>
+
+  <!-- AUTH VIEW -->
+  <section id="authView" class="view">
+    <div class="auth-card">
+      <div class="auth-intro">
+        <div class="auth-label">[ acesso ]</div>
+        <h1 class="auth-title" id="authTitle">Entrar</h1>
+        <p class="auth-sub" id="authSub">Registre as questões do seu dia. Constância acima de tudo.</p>
+      </div>
+
+      <div id="authFeedback"></div>
+
+      <!-- Name field (only for signup) -->
+      <div class="field hidden" id="nameField">
+        <label class="field-label" for="inputName">Nome (aparece no ranking)</label>
+        <input type="text" id="inputName" class="field-input" placeholder="Ex: Jaymesson" autocomplete="name" />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="inputEmail">E-mail</label>
+        <input type="email" id="inputEmail" class="field-input" placeholder="seu@email.com" autocomplete="email" />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="inputPassword">Senha</label>
+        <input type="password" id="inputPassword" class="field-input" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <button id="submitBtn" class="btn">Entrar</button>
+
+      <div class="auth-toggle">
+        <span id="toggleText">Primeira vez por aqui?</span>
+        <a id="toggleLink">Criar conta</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD VIEW -->
+  <section id="dashView" class="view hidden">
+    <div class="greeting">
+      <div class="greeting-label">[ sessão ativa ]</div>
+      <div class="greeting-name" id="greetingName">—</div>
+    </div>
+
+    <!-- TODAY CARD -->
+    <div class="today-card">
+      <div class="date-row">
+        <span class="date-label">hoje</span>
+        <span class="date-value" id="todayDate">—</span>
+      </div>
+
+      <div id="todayStatus" class="today-status hidden"></div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label" for="qInput">Questões</label>
+          <div class="metric-input">
+            <input type="number" id="qInput" class="field-input" placeholder="0" min="1" inputmode="numeric" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="aInput">Acerto</label>
+          <div class="metric-input">
+            <input type="number" id="aInput" class="field-input" placeholder="0" min="0" max="100" step="0.1" inputmode="decimal" />
+            <span class="metric-suffix">%</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="saveBtn" class="btn">Registrar dia</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-label">streak</div>
+        <div class="stat-value accent" id="statStreak">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">questões</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">% médio</div>
+        <div class="stat-value" id="statAvg">—</div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="history-section">
+      <div class="section-header">
+        <div class="section-title">Histórico</div>
+        <div class="section-meta" id="historyMeta">últimos 14 dias</div>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-state">Carregando…</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script type="module">
+  // ============================================================
+  //  CONFIG
+  // ============================================================
+  const API_URL = 'https://50-api.devestavel.com.br';
+
+  // ============================================================
+  //  STATE
+  // ============================================================
+  const state = {
+    user: null,
+    token: null,
+    mode: 'login', // 'login' | 'signup'
+    todayLog: null,
+    logs: [],
+  };
+
+  // Session persistence keys
+  const K_TOKEN = 'pb_token';
+  const K_USER = 'pb_user';
+
+  // ============================================================
+  //  HELPERS
+  // ============================================================
+  const $ = (id) => document.getElementById(id);
+
+  function todayBrasilia() {
+    // Brasília is UTC-3 (no DST since 2019)
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const brt = new Date(utc - (3 * 3600000));
+    return brt.toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  function formatDatePtBr(iso) {
+    // iso = YYYY-MM-DD
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function showFeedback(type, msg) {
+    const el = $('authFeedback');
+    el.className = `feedback ${type}`;
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type === 'success') {
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+  }
+
+  function clearFeedback() {
+    const el = $('authFeedback');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+
+  async function api(path, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+    if (state.token) headers['Authorization'] = state.token;
+
+    const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = data.message || data.data?.email?.message || `Erro ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  // ============================================================
+  //  AUTH
+  // ============================================================
+  function setAuthMode(mode) {
+    state.mode = mode;
+    if (mode === 'signup') {
+      $('authTitle').textContent = 'Criar conta';
+      $('authSub').textContent = 'Use seu nome real — ele aparece no ranking do grupo.';
+      $('submitBtn').textContent = 'Criar conta';
+      $('toggleText').textContent = 'Já tem conta?';
+      $('toggleLink').textContent = 'Entrar';
+      $('nameField').classList.remove('hidden');
+      $('inputPassword').setAttribute('autocomplete', 'new-password');
+    } else {
+      $('authTitle').textContent = 'Entrar';
+      $('authSub').textContent = 'Registre as questões do seu dia. Constância acima de tudo.';
+      $('submitBtn').textContent = 'Entrar';
+      $('toggleText').textContent = 'Primeira vez por aqui?';
+      $('toggleLink').textContent = 'Criar conta';
+      $('nameField').classList.add('hidden');
+      $('inputPassword').setAttribute('autocomplete', 'current-password');
+    }
+    clearFeedback();
+  }
+
+  async function handleAuthSubmit() {
+    const email = $('inputEmail').value.trim().toLowerCase();
+    const password = $('inputPassword').value;
+    const name = $('inputName').value.trim();
+
+    if (!email || !password) {
+      return showFeedback('error', 'Preencha email e senha.');
+    }
+    if (password.length < 8) {
+      return showFeedback('error', 'Senha precisa de pelo menos 8 caracteres.');
+    }
+    if (state.mode === 'signup' && !name) {
+      return showFeedback('error', 'Coloca seu nome — ele aparece no ranking.');
+    }
+
+    const btn = $('submitBtn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span>';
+
+    try {
+      if (state.mode === 'signup') {
+        // Create user
+        await api('/api/collections/users/records', {
+          method: 'POST',
+          body: JSON.stringify({
+            email,
+            password,
+            passwordConfirm: password,
+            name,
+          }),
+        });
+      }
+      // Authenticate
+      const auth = await api('/api/collections/users/auth-with-password', {
+        method: 'POST',
+        body: JSON.stringify({ identity: email, password }),
+      });
+      state.token = auth.token;
+      state.user = auth.record;
+      localStorage.setItem(K_TOKEN, auth.token);
+      localStorage.setItem(K_USER, JSON.stringify(auth.record));
+      await enterDashboard();
+    } catch (err) {
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('email') && msg.includes('valid')) {
+        showFeedback('error', 'Email inválido.');
+      } else if (msg.includes('already') || msg.includes('exists')) {
+        showFeedback('error', 'Esse email já tem conta. Tenta entrar.');
+      } else if (msg.includes('failed to authenticate') || msg.includes('invalid')) {
+        showFeedback('error', 'Email ou senha incorretos.');
+      } else {
+        showFeedback('error', err.message || 'Erro ao processar.');
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+
+  function logout() {
+    state.user = null;
+    state.token = null;
+    state.todayLog = null;
+    state.logs = [];
+    localStorage.removeItem(K_TOKEN);
+    localStorage.removeItem(K_USER);
+    $('dashView').classList.add('hidden');
+    $('authView').classList.remove('hidden');
+    $('logoutBtn').classList.add('hidden');
+    $('inputEmail').value = '';
+    $('inputPassword').value = '';
+    $('inputName').value = '';
+    setAuthMode('login');
+  }
+
+  // ============================================================
+  //  DASHBOARD
+  // ============================================================
+  async function enterDashboard() {
+    $('authView').classList.add('hidden');
+    $('dashView').classList.remove('hidden');
+    $('logoutBtn').classList.remove('hidden');
+    $('greetingName').textContent = state.user.name || state.user.email;
+    $('todayDate').textContent = formatDatePtBr(todayBrasilia());
+
+    await loadLogs();
+  }
+
+  async function loadLogs() {
+    try {
+      // Fetch logs for this user, sorted by date desc, last 30
+      const filter = encodeURIComponent(`user="${state.user.id}"`);
+      const data = await api(`/api/collections/daily_logs/records?filter=${filter}&sort=-date&perPage=60`);
+      state.logs = data.items || [];
+
+      // Find today's log
+      const today = todayBrasilia();
+      state.todayLog = state.logs.find(l => l.date?.slice(0, 10) === today) || null;
+
+      renderToday();
+      renderStats();
+      renderHistory();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderToday() {
+    const statusEl = $('todayStatus');
+    if (state.todayLog) {
+      statusEl.innerHTML = `<strong>Dia registrado.</strong> Você fez <strong>${state.todayLog.questions}</strong> questões com <strong>${state.todayLog.accuracy}%</strong> de acerto. Pode atualizar se mandar mais.`;
+      statusEl.classList.remove('hidden');
+      $('qInput').value = state.todayLog.questions;
+      $('aInput').value = state.todayLog.accuracy;
+      $('saveBtn').textContent = 'Atualizar';
+    } else {
+      statusEl.classList.add('hidden');
+      $('qInput').value = '';
+      $('aInput').value = '';
+      $('saveBtn').textContent = 'Registrar dia';
+    }
+  }
+
+  function calcStreak(logs) {
+    // logs sorted by date DESC. Streak = consecutive days ending at yesterday or today.
+    if (!logs.length) return 0;
+    const today = todayBrasilia();
+    const dates = new Set(logs.map(l => l.date?.slice(0, 10)));
+
+    let streak = 0;
+    let cursor = new Date(today + 'T12:00:00');
+
+    // If no log today, streak can still count from yesterday
+    let hasToday = dates.has(today);
+    if (!hasToday) {
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    while (true) {
+      const iso = cursor.toISOString().slice(0, 10);
+      if (dates.has(iso)) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  function renderStats() {
+    const streak = calcStreak(state.logs);
+    const total = state.logs.reduce((sum, l) => sum + (l.questions || 0), 0);
+    const acc = state.logs.length
+      ? (state.logs.reduce((s, l) => s + (l.accuracy || 0), 0) / state.logs.length).toFixed(1)
+      : '—';
+
+    $('statStreak').textContent = streak;
+    $('statTotal').textContent = total.toLocaleString('pt-BR');
+    $('statAvg').textContent = acc === '—' ? '—' : `${acc}%`;
+  }
+
+  function renderHistory() {
+    const list = $('historyList');
+    const recent = state.logs.slice(0, 14);
+
+    if (!recent.length) {
+      list.innerHTML = '<div class="empty-state">Nenhum registro ainda. Começa hoje.</div>';
+      return;
+    }
+
+    list.innerHTML = recent.map(l => `
+      <div class="history-item">
+        <span class="history-date">${formatDatePtBr(l.date.slice(0, 10))}</span>
+        <span class="history-questions">${l.questions.toLocaleString('pt-BR')} q</span>
+        <span class="history-accuracy">${l.accuracy}%</span>
+      </div>
+    `).join('');
+  }
+
+  async function saveLog() {
+    const q = parseInt($('qInput').value, 10);
+    const a = parseFloat($('aInput').value);
+
+    if (!q || q < 1) {
+      return alert('Informe um número de questões válido.');
+    }
+    if (isNaN(a) || a < 0 || a > 100) {
+      return alert('Informe um % de acerto entre 0 e 100.');
+    }
+
+    const btn = $('saveBtn');
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.innerHTML = '<span class="loader"></span>';
+
+    try {
+      const payload = {
+        user: state.user.id,
+        date: todayBrasilia(),
+        questions: q,
+        accuracy: a,
+      };
+
+      if (state.todayLog) {
+        // Update
+        await api(`/api/collections/daily_logs/records/${state.todayLog.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        });
+      } else {
+        // Create
+        await api('/api/collections/daily_logs/records', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      }
+
+      await loadLogs();
+      btn.textContent = '✓ salvo';
+      setTimeout(() => { btn.textContent = state.todayLog ? 'Atualizar' : 'Registrar dia'; }, 1500);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao salvar: ' + (err.message || 'tente de novo'));
+      btn.textContent = originalText;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ============================================================
+  //  BOOT
+  // ============================================================
+  async function boot() {
+    // Restore session
+    const savedToken = localStorage.getItem(K_TOKEN);
+    const savedUser = localStorage.getItem(K_USER);
+    if (savedToken && savedUser) {
+      state.token = savedToken;
+      try {
+        state.user = JSON.parse(savedUser);
+        // Validate by refreshing auth
+        const refreshed = await api('/api/collections/users/auth-refresh', {
+          method: 'POST',
+        });
+        state.token = refreshed.token;
+        state.user = refreshed.record;
+        localStorage.setItem(K_TOKEN, refreshed.token);
+        localStorage.setItem(K_USER, JSON.stringify(refreshed.record));
+        await enterDashboard();
+        return;
+      } catch {
+        // Token invalid, fall through to login
+        localStorage.removeItem(K_TOKEN);
+        localStorage.removeItem(K_USER);
+        state.user = null;
+        state.token = null;
+      }
+    }
+    setAuthMode('login');
+  }
+
+  // Event listeners
+  $('submitBtn').addEventListener('click', handleAuthSubmit);
+  $('toggleLink').addEventListener('click', () => setAuthMode(state.mode === 'login' ? 'signup' : 'login'));
+  $('logoutBtn').addEventListener('click', logout);
+  $('saveBtn').addEventListener('click', saveLog);
+
+  // Submit on Enter
+  ['inputEmail', 'inputPassword', 'inputName'].forEach(id => {
+    $(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleAuthSubmit();
+    });
+  });
+  ['qInput', 'aInput'].forEach(id => {
+    $(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveLog();
+    });
+  });
+
+  boot();
+</script>
+
+</body>
+</html>
