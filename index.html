@@ -48,7 +48,6 @@
     background-attachment: fixed;
   }
 
-  /* Grid texture */
   body::before {
     content: '';
     position: fixed;
@@ -72,7 +71,6 @@
     flex-direction: column;
   }
 
-  /* ===== HEADER ===== */
   .header {
     display: flex;
     align-items: center;
@@ -140,7 +138,6 @@
     border-color: var(--border-strong);
   }
 
-  /* ===== AUTH CARD ===== */
   .auth-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -212,6 +209,18 @@
     color: var(--text-faint);
   }
 
+  .field-hint {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .field-hint strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
   .btn {
     width: 100%;
     background: var(--accent);
@@ -273,7 +282,6 @@
     text-decoration: underline;
   }
 
-  /* ===== FEEDBACK ===== */
   .feedback {
     padding: 10px 14px;
     border-radius: 4px;
@@ -293,7 +301,43 @@
     color: #6ee7b7;
   }
 
-  /* ===== DASHBOARD ===== */
+  /* ===== TOAST ===== */
+  .toast-container {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: none;
+    width: calc(100% - 32px);
+    max-width: 440px;
+  }
+
+  .toast {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--danger);
+    color: #fca5a5;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    animation: slideDown 0.25s ease-out;
+    pointer-events: auto;
+  }
+
+  .toast.success {
+    border-left-color: var(--success);
+    color: #6ee7b7;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .greeting {
     margin-bottom: 28px;
   }
@@ -398,7 +442,6 @@
     padding-right: 32px;
   }
 
-  /* ===== TODAY STATUS ===== */
   .today-status {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
@@ -416,7 +459,6 @@
     font-weight: 600;
   }
 
-  /* ===== HISTORY ===== */
   .history-section {
     margin-top: 24px;
   }
@@ -491,7 +533,6 @@
     font-size: 12px;
   }
 
-  /* ===== LOADING ===== */
   .loader {
     display: inline-block;
     width: 12px;
@@ -509,7 +550,6 @@
 
   .hidden { display: none !important; }
 
-  /* ===== UTIL ===== */
   .stat-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -546,7 +586,6 @@
     color: var(--accent);
   }
 
-  /* Page transition */
   .view {
     animation: fadeUp 0.4s ease-out;
   }
@@ -556,7 +595,6 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Responsive tweaks */
   @media (max-width: 380px) {
     .auth-title { font-size: 24px; }
     .greeting-name { font-size: 20px; }
@@ -565,9 +603,11 @@
 </head>
 <body>
 
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="toast-container"></div>
+
 <div class="container">
 
-  <!-- HEADER -->
   <header class="header">
     <div class="brand">
       <div class="brand-mark">50</div>
@@ -576,7 +616,6 @@
     <button id="logoutBtn" class="user-pill hidden">sair</button>
   </header>
 
-  <!-- AUTH VIEW -->
   <section id="authView" class="view">
     <div class="auth-card">
       <div class="auth-intro">
@@ -587,10 +626,10 @@
 
       <div id="authFeedback"></div>
 
-      <!-- Name field (only for signup) -->
       <div class="field hidden" id="nameField">
-        <label class="field-label" for="inputName">Nome (aparece no ranking)</label>
-        <input type="text" id="inputName" class="field-input" placeholder="Ex: Jaymesson" autocomplete="name" />
+        <label class="field-label" for="inputName">Seu nome</label>
+        <input type="text" id="inputName" class="field-input" placeholder="Ex: Jaymesson" autocomplete="name" maxlength="60" />
+        <div class="field-hint" id="namePreview">No ranking vai aparecer só o primeiro nome, cortado em 10 letras.</div>
       </div>
 
       <div class="field">
@@ -612,14 +651,12 @@
     </div>
   </section>
 
-  <!-- DASHBOARD VIEW -->
   <section id="dashView" class="view hidden">
     <div class="greeting">
       <div class="greeting-label">[ sessão ativa ]</div>
       <div class="greeting-name" id="greetingName">—</div>
     </div>
 
-    <!-- TODAY CARD -->
     <div class="today-card">
       <div class="date-row">
         <span class="date-label">hoje</span>
@@ -647,7 +684,6 @@
       <button id="saveBtn" class="btn">Registrar dia</button>
     </div>
 
-    <!-- STATS -->
     <div class="stat-row">
       <div class="stat-box">
         <div class="stat-label">streak</div>
@@ -663,7 +699,6 @@
       </div>
     </div>
 
-    <!-- HISTORY -->
     <div class="history-section">
       <div class="section-header">
         <div class="section-title">Histórico</div>
@@ -682,6 +717,7 @@
   //  CONFIG
   // ============================================================
   const API_URL = 'https://50-api.devestavel.com.br';
+  const MAX_DISPLAY_CHARS = 10;
 
   // ============================================================
   //  STATE
@@ -689,12 +725,11 @@
   const state = {
     user: null,
     token: null,
-    mode: 'login', // 'login' | 'signup'
+    mode: 'login',
     todayLog: null,
     logs: [],
   };
 
-  // Session persistence keys
   const K_TOKEN = 'pb_token';
   const K_USER = 'pb_user';
 
@@ -704,17 +739,20 @@
   const $ = (id) => document.getElementById(id);
 
   function todayBrasilia() {
-    // Brasília is UTC-3 (no DST since 2019)
     const now = new Date();
     const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
     const brt = new Date(utc - (3 * 3600000));
-    return brt.toISOString().slice(0, 10); // YYYY-MM-DD
+    return brt.toISOString().slice(0, 10);
   }
 
   function formatDatePtBr(iso) {
-    // iso = YYYY-MM-DD
     const [y, m, d] = iso.split('-');
     return `${d}/${m}/${y}`;
+  }
+
+  function rankingNameFor(fullName) {
+    const first = (fullName || '').trim().split(/\s+/)[0] || '';
+    return first.slice(0, MAX_DISPLAY_CHARS);
   }
 
   function showFeedback(type, msg) {
@@ -733,17 +771,63 @@
     el.textContent = '';
   }
 
+  function showToast(type, msg, duration = 4000) {
+    const container = $('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s';
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
   async function api(path, opts = {}) {
     const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
     if (state.token) headers['Authorization'] = state.token;
 
-    const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
+    let res;
+    try {
+      res = await fetch(`${API_URL}${path}`, { ...opts, headers });
+    } catch (networkErr) {
+      // Rede fora do ar: propaga como erro especial
+      const err = new Error('Sem conexão com o servidor. Tenta de novo.');
+      err.isNetworkError = true;
+      throw err;
+    }
+
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       const msg = data.message || data.data?.email?.message || `Erro ${res.status}`;
-      throw new Error(msg);
+      const err = new Error(msg);
+      err.status = res.status;
+      err.responseData = data;
+      throw err;
     }
     return data;
+  }
+
+  // ============================================================
+  //  NAME PREVIEW
+  // ============================================================
+  function updateNamePreview() {
+    const val = $('inputName').value;
+    const preview = rankingNameFor(val);
+    const hintEl = $('namePreview');
+
+    if (!val.trim()) {
+      hintEl.innerHTML = 'No ranking vai aparecer só o primeiro nome, cortado em 10 letras.';
+      return;
+    }
+
+    if (!preview) {
+      hintEl.innerHTML = 'No ranking vai aparecer só o primeiro nome, cortado em 10 letras.';
+      return;
+    }
+
+    hintEl.innerHTML = `No ranking vai aparecer como <strong>${preview}</strong>`;
   }
 
   // ============================================================
@@ -759,6 +843,7 @@
       $('toggleLink').textContent = 'Entrar';
       $('nameField').classList.remove('hidden');
       $('inputPassword').setAttribute('autocomplete', 'new-password');
+      updateNamePreview();
     } else {
       $('authTitle').textContent = 'Entrar';
       $('authSub').textContent = 'Registre as questões do seu dia. Constância acima de tudo.';
@@ -782,8 +867,13 @@
     if (password.length < 8) {
       return showFeedback('error', 'Senha precisa de pelo menos 8 caracteres.');
     }
-    if (state.mode === 'signup' && !name) {
-      return showFeedback('error', 'Coloca seu nome — ele aparece no ranking.');
+    if (state.mode === 'signup') {
+      if (!name) {
+        return showFeedback('error', 'Coloca seu nome — ele aparece no ranking.');
+      }
+      if (!rankingNameFor(name)) {
+        return showFeedback('error', 'Nome inválido. Usa letras, sem só símbolos.');
+      }
     }
 
     const btn = $('submitBtn');
@@ -793,7 +883,6 @@
 
     try {
       if (state.mode === 'signup') {
-        // Create user
         await api('/api/collections/users/records', {
           method: 'POST',
           body: JSON.stringify({
@@ -804,7 +893,6 @@
           }),
         });
       }
-      // Authenticate
       const auth = await api('/api/collections/users/auth-with-password', {
         method: 'POST',
         body: JSON.stringify({ identity: email, password }),
@@ -816,9 +904,11 @@
       await enterDashboard();
     } catch (err) {
       const msg = (err.message || '').toLowerCase();
-      if (msg.includes('email') && msg.includes('valid')) {
+      if (err.isNetworkError) {
+        showFeedback('error', 'Sem conexão. Confere sua internet e tenta de novo.');
+      } else if (msg.includes('email') && msg.includes('valid')) {
         showFeedback('error', 'Email inválido.');
-      } else if (msg.includes('already') || msg.includes('exists')) {
+      } else if (msg.includes('already') || msg.includes('exists') || msg.includes('not unique') || msg.includes('in use')) {
         showFeedback('error', 'Esse email já tem conta. Tenta entrar.');
       } else if (msg.includes('failed to authenticate') || msg.includes('invalid')) {
         showFeedback('error', 'Email ou senha incorretos.');
@@ -862,12 +952,10 @@
 
   async function loadLogs() {
     try {
-      // Fetch logs for this user, sorted by date desc, last 30
       const filter = encodeURIComponent(`user="${state.user.id}"`);
       const data = await api(`/api/collections/daily_logs/records?filter=${filter}&sort=-date&perPage=60`);
       state.logs = data.items || [];
 
-      // Find today's log
       const today = todayBrasilia();
       state.todayLog = state.logs.find(l => l.date?.slice(0, 10) === today) || null;
 
@@ -876,6 +964,11 @@
       renderHistory();
     } catch (err) {
       console.error(err);
+      if (err.isNetworkError) {
+        showToast('error', 'Sem conexão. Recarregue a página.');
+      } else {
+        showToast('error', 'Erro ao carregar seus dados: ' + (err.message || 'tente de novo'));
+      }
     }
   }
 
@@ -896,7 +989,6 @@
   }
 
   function calcStreak(logs) {
-    // logs sorted by date DESC. Streak = consecutive days ending at yesterday or today.
     if (!logs.length) return 0;
     const today = todayBrasilia();
     const dates = new Set(logs.map(l => l.date?.slice(0, 10)));
@@ -904,7 +996,6 @@
     let streak = 0;
     let cursor = new Date(today + 'T12:00:00');
 
-    // If no log today, streak can still count from yesterday
     let hasToday = dates.has(today);
     if (!hasToday) {
       cursor.setDate(cursor.getDate() - 1);
@@ -957,10 +1048,10 @@
     const a = parseFloat($('aInput').value);
 
     if (!q || q < 1) {
-      return alert('Informe um número de questões válido.');
+      return showToast('error', 'Informe um número de questões válido (mínimo 1).');
     }
     if (isNaN(a) || a < 0 || a > 100) {
-      return alert('Informe um % de acerto entre 0 e 100.');
+      return showToast('error', 'Informe um % de acerto entre 0 e 100.');
     }
 
     const btn = $('saveBtn');
@@ -977,13 +1068,11 @@
       };
 
       if (state.todayLog) {
-        // Update
         await api(`/api/collections/daily_logs/records/${state.todayLog.id}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
         });
       } else {
-        // Create
         await api('/api/collections/daily_logs/records', {
           method: 'POST',
           body: JSON.stringify(payload),
@@ -992,10 +1081,19 @@
 
       await loadLogs();
       btn.textContent = '✓ salvo';
+      showToast('success', 'Registro salvo.');
       setTimeout(() => { btn.textContent = state.todayLog ? 'Atualizar' : 'Registrar dia'; }, 1500);
     } catch (err) {
       console.error(err);
-      alert('Erro ao salvar: ' + (err.message || 'tente de novo'));
+      if (err.isNetworkError) {
+        showToast('error', 'Sem conexão. Tenta de novo em alguns segundos.');
+      } else if (err.status === 400 && /already exists|not unique/i.test(err.message)) {
+        // Race condition: já existe registro pra hoje
+        showToast('error', 'Já existe um registro pra hoje. Recarregando…');
+        setTimeout(() => loadLogs(), 1000);
+      } else {
+        showToast('error', 'Erro ao salvar: ' + (err.message || 'tente de novo'));
+      }
       btn.textContent = originalText;
     } finally {
       btn.disabled = false;
@@ -1006,14 +1104,12 @@
   //  BOOT
   // ============================================================
   async function boot() {
-    // Restore session
     const savedToken = localStorage.getItem(K_TOKEN);
     const savedUser = localStorage.getItem(K_USER);
     if (savedToken && savedUser) {
       state.token = savedToken;
       try {
         state.user = JSON.parse(savedUser);
-        // Validate by refreshing auth
         const refreshed = await api('/api/collections/users/auth-refresh', {
           method: 'POST',
         });
@@ -1023,8 +1119,19 @@
         localStorage.setItem(K_USER, JSON.stringify(refreshed.record));
         await enterDashboard();
         return;
-      } catch {
-        // Token invalid, fall through to login
+      } catch (err) {
+        // Só desloga se for erro de auth (401/403). Pra erro de rede, mantém sessão local e tenta usar.
+        if (err.isNetworkError) {
+          console.warn('Refresh falhou por rede. Seguindo com sessão local.');
+          try {
+            await enterDashboard();
+            showToast('error', 'Conexão instável. Seus dados podem estar desatualizados.');
+            return;
+          } catch (dashErr) {
+            console.error(dashErr);
+          }
+        }
+        // Token invalidado de verdade
         localStorage.removeItem(K_TOKEN);
         localStorage.removeItem(K_USER);
         state.user = null;
@@ -1039,8 +1146,8 @@
   $('toggleLink').addEventListener('click', () => setAuthMode(state.mode === 'login' ? 'signup' : 'login'));
   $('logoutBtn').addEventListener('click', logout);
   $('saveBtn').addEventListener('click', saveLog);
+  $('inputName').addEventListener('input', updateNamePreview);
 
-  // Submit on Enter
   ['inputEmail', 'inputPassword', 'inputName'].forEach(id => {
     $(id).addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleAuthSubmit();
