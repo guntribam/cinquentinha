@@ -1062,7 +1062,7 @@
     try {
       const payload = {
         user: state.user.id,
-        date: todayBrasilia(),
+        date: todayBrasilia() + ' 12:00:00.000Z',
         questions: q,
         accuracy: a,
       };
